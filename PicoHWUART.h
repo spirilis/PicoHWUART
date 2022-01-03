@@ -28,8 +28,9 @@
 
 extern "C" typedef struct uart_inst uart_inst_t;
 
-#define PICOHWUART_RX_BUF_SIZE 4096
-#define PICOHWUART_TX_BUF_SIZE 4096
+// Setting to 32 because the RP2040 UART FIFOs are 32 bytes deep
+#define PICOHWUART_DEFAULT_RX_BUF_SIZE 32
+#define PICOHWUART_DEFAULT_TX_BUF_SIZE 8
 
 class PicoHWUART : public HardwareSerial {
 public:
@@ -60,6 +61,9 @@ public:
     using Print::write;
     operator bool() override;
 
+    // Public function allows user to provide their own buffers
+    void setBuffers(char *txbuf, unsigned int txbufsz, char *rxbuf, unsigned int rxbufsz);
+
     // Need to be public in order for the static IRQ handler functions to use
     uart_inst_t *_uart;
     void _rxBufWrite(char);
@@ -79,9 +83,11 @@ private:
     bool _txAvailableForWrite();
     void _txBufWrite(char);
 
-    volatile char _rxBuf[PICOHWUART_RX_BUF_SIZE];
+    volatile char *_rxBuf;
+    char _defaultRxBuf[PICOHWUART_DEFAULT_RX_BUF_SIZE];
     volatile char *_rxHead, *_rxTail;
-    volatile char _txBuf[PICOHWUART_TX_BUF_SIZE];
+    volatile char *_txBuf;
+    char _defaultTxBuf[PICOHWUART_DEFAULT_TX_BUF_SIZE];
     volatile char *_txHead, *_txTail;
     int _rxBufSz, _txBufSz;
 };

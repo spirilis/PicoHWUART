@@ -121,6 +121,10 @@ PicoHWUART::PicoHWUART(uart_inst_t *uart, pin_size_t tx, pin_size_t rx) {
     _uart = uart;
     _tx = tx;
     _rx = rx;
+    _txBuf = _defaultTxBuf;
+    _rxBuf = _defaultRxBuf;
+    _txBufSz = PICOHWUART_DEFAULT_TX_BUF_SIZE;
+    _rxBufSz = PICOHWUART_DEFAULT_RX_BUF_SIZE;
     mutex_init(&_mutex);
 }
 
@@ -137,10 +141,8 @@ void PicoHWUART::_uart_irq_config(bool enabled, int rx_timeout_setting, int tx_t
 void PicoHWUART::_bufReset() {
     _rxHead = _rxBuf;
     _rxTail = _rxBuf;
-    _rxBufSz = PICOHWUART_RX_BUF_SIZE;
     _txHead = _txBuf;
     _txTail = _txBuf;
-    _txBufSz = PICOHWUART_TX_BUF_SIZE;
 }
 
 int PicoHWUART::_rxBufRead() {
@@ -248,6 +250,17 @@ bool PicoHWUART::_txAvailableForWrite() {
         return 1;
     }
     return 0;
+}
+
+void PicoHWUART::setBuffers(char *txbuf, unsigned int txbufsz, char *rxbuf, unsigned int rxbufsz) {
+    if (txbuf != NULL && rxbuf != NULL &&
+        txbufsz > 0 && rxbufsz > 0) {
+        _txBuf = txbuf;
+        _txBufSz = txbufsz;
+        _rxBuf = rxbuf;
+        _rxBufSz = rxbufsz;
+        _bufReset();
+    }
 }
 
 void PicoHWUART::begin(unsigned long baud, uint16_t config) {
@@ -396,6 +409,9 @@ size_t PicoHWUART::write(uint8_t c) {
     CoreMutex m(&_mutex);
     if (!_running || !m) {
         return 0;
+    }
+    while (!_txAvailableForWrite()) {
+        delayMicroseconds(50);
     }
     _txBufWrite((char)c);
     _triggerTX();
