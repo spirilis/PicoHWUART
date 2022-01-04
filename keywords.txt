@@ -1,0 +1,29 @@
+#######################################
+# Syntax Coloring Map PicoHWUART
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+PicoHWUART	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+begin	KEYWORD2
+end	KEYWORD2
+setRX	KEYWORD2
+setTX	KEYWORD2
+setPinout	KEYWORD2
+peek	KEYWORD2
+read	KEYWORD2
+available	KEYWORD2
+availableForWrite	KEYWORD2
+flush	KEYWORD2
+write	KEYWORD2
+setBuffers	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
